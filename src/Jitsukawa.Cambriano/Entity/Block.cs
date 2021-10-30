@@ -18,6 +18,11 @@ namespace Jitsukawa.Cambriano.Entity
         public DateTime DateTime { get; set; }
 
         /// <summary>
+        /// Prova de trabalho.
+        /// </summary>
+        public int Nonce { get; set; }
+
+        /// <summary>
         /// Conteúdo do bloco.
         /// </summary>
         public string Content { get; set; } = null!;

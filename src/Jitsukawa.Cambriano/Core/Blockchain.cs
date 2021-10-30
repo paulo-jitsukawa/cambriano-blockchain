@@ -26,6 +26,7 @@ namespace Jitsukawa.Cambriano.Core
         /// </summary>
         private static Block GenesisBlock => new()
         {
+            Nonce = 1,
             Content = "Genesis Block",
             PreviousHash = string.Empty
         };
@@ -39,20 +40,38 @@ namespace Jitsukawa.Cambriano.Core
         /// Adiciona um bloco à cadeia.
         /// </summary>
         /// <param name="content">Conteúdo do bloco.</param>
+        /// <param name="nonce">Nonce do bloco.</param>
+        /// <param name="previousHash">Hash do último bloco.</param>
         /// <returns>Índice do bloco adicionado.</returns>
-        public int CreateBlock(string content)
+        private int CreateBlock(string content, int nonce, string previousHash)
         {
             var block = new Block
             {
                 Index = Chain.Count,
                 DateTime = DateTime.Now,
+                Nonce = nonce,
                 Content = content,
-                PreviousHash = Hash(PreviousBlock)
+                PreviousHash = previousHash
             };
 
             Chain.Add(block);
 
             return block.Index;
+        }
+
+        /// <summary>
+        /// Minera um bloco com o conteúdo fornecido e o adiciona à cadeia.
+        /// </summary>
+        /// <param name="content">Conteúdo do bloco.</param>
+        /// <returns>Índice do bloco.</returns>
+        public int MineBlock(string content)
+        {
+            var previousBlock = PreviousBlock;
+            var previousNonce = previousBlock.Nonce;
+            var currentNonce = ProofOfWork(previousNonce);
+            var previousHash = Hash(previousBlock);
+
+            return CreateBlock(content, currentNonce, previousHash);
         }
 
         #endregion
@@ -82,6 +101,13 @@ namespace Jitsukawa.Cambriano.Core
                     return false;
                 }
 
+                var dificulty = Math.Pow(currentBlock.Nonce, 2) - Math.Pow(previousBlock.Nonce, 2);
+                var hash = crypto.ComputeHash(sha256, dificulty.ToString());
+                if (!hash.StartsWith("0000"))
+                {
+                    return false;
+                }
+
                 previousBlock = currentBlock;
             }
 
@@ -102,6 +128,29 @@ namespace Jitsukawa.Cambriano.Core
 
             using var sha256 = SHA256.Create();
             return crypto.ComputeHash(sha256, json);
+        }
+
+        /// <summary>
+        /// Descobre o próximo Nonce.
+        /// </summary>
+        /// <param name="previousNonce">Nonce do último bloco.</param>
+        /// <returns>Nonce encontrado.</returns>
+        public int ProofOfWork(int previousNonce)
+        {
+            using var sha256 = SHA256.Create();
+
+            for (int newNonce = 1; newNonce < int.MaxValue; newNonce++)
+            {
+                var dificulty = Math.Pow(newNonce, 2) - Math.Pow(previousNonce, 2);
+                var hash = crypto.ComputeHash(sha256, dificulty.ToString());
+
+                if (hash.StartsWith("0000"))
+                {
+                    return newNonce;
+                }
+            }
+
+            return -1;
         }
 
         #endregion

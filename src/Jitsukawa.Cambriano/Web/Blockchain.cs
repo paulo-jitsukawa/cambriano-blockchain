@@ -45,18 +45,18 @@ namespace Jitsukawa.Cambriano.Web
         }
 
         /// <summary>
-        /// Cria e adiciona blocos à cadeia.
+        /// Minera os próximos blocos e os adiciona à cadeia.
         /// </summary>
-        [HttpPost("Create")]
-        public IActionResult CreateBlocks([FromBody] string[] contents)
+        [HttpPost("Mine")]
+        public IActionResult MineBlocks([FromBody] string[] contents)
         {
-            var result = "Criados os blocos: ";
+            var result = "Minerados os blocos: ";
 
             foreach (var content in contents)
             {
-                var index = blockchain.CreateBlock(content);
+                var index = blockchain.MineBlock(content);
 
-                logger.LogInformation($"{DateTime.Now:yyyy-MM-dd HH:mm:ss} Adicionado o bloco de índice {index}.");
+                logger.LogInformation($"{DateTime.Now:yyyy-MM-dd HH:mm:ss} Minerado o bloco de índice {index}.");
 
                 result += $"{index}, ";
             }

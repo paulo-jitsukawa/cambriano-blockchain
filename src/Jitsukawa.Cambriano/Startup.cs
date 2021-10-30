@@ -26,7 +26,7 @@ namespace Jitsukawa.Cambriano
 
             services.AddSwaggerGen(c =>
             {
-                c.SwaggerDoc("v1", new OpenApiInfo { Title = "Jitsukawa.Cambriano", Version = "v1" });
+                c.SwaggerDoc("v1", new OpenApiInfo { Title = "Jitsukawa.Cambriano", Version = "v2" });
             });
         }
 
@@ -36,7 +36,7 @@ namespace Jitsukawa.Cambriano
             {
                 app.UseDeveloperExceptionPage();
                 app.UseSwagger();
-                app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "Jitsukawa.Cambriano v1"));
+                app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "Jitsukawa.Cambriano v2"));
             }
 
             app.UseRouting();
