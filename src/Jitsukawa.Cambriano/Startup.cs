@@ -21,12 +21,13 @@ namespace Jitsukawa.Cambriano
         {
             services.AddSingleton<Blockchain>();
             services.AddSingleton<Crypto>();
+            services.AddSingleton<Network>();
 
             services.AddControllers();
 
             services.AddSwaggerGen(c =>
             {
-                c.SwaggerDoc("v1", new OpenApiInfo { Title = "Jitsukawa.Cambriano", Version = "v2" });
+                c.SwaggerDoc("v1", new OpenApiInfo { Title = "Jitsukawa.Cambriano", Version = "v3" });
             });
         }
 
@@ -36,7 +37,7 @@ namespace Jitsukawa.Cambriano
             {
                 app.UseDeveloperExceptionPage();
                 app.UseSwagger();
-                app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "Jitsukawa.Cambriano v2"));
+                app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "Jitsukawa.Cambriano v3"));
             }
 
             app.UseRouting();

@@ -18,6 +18,11 @@ namespace Jitsukawa.Cambriano.Entity
         public DateTime DateTime { get; set; }
 
         /// <summary>
+        /// Identificador do nodo que minerou o bloco.
+        /// </summary>
+        public string Node { get; set; } = null!;
+
+        /// <summary>
         /// Prova de trabalho.
         /// </summary>
         public int Nonce { get; set; }

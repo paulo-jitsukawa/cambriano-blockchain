@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using System;
+using System.Threading.Tasks;
 using BlockchainCore = Jitsukawa.Cambriano.Core.Blockchain;
 
 namespace Jitsukawa.Cambriano.Web
@@ -45,6 +46,21 @@ namespace Jitsukawa.Cambriano.Web
         }
 
         /// <summary>
+        /// Atualiza a cadeia de blocos conforme o consenso da rede.
+        /// </summary>
+        [HttpPost("Sync")]
+        public async Task<IActionResult> ChainSync()
+        {
+            var replaced = await blockchain.ChainSync();
+
+            logger.LogInformation(replaced
+                ? $"{DateTime.Now:yyyy-MM-dd HH:mm:ss} Blockchain sincronizada: foi necessário atualizar os blocos."
+                : $"{DateTime.Now:yyyy-MM-dd HH:mm:ss} Blockchain sincronizada: não foi necessário aplicar mudanças.");
+
+            return Ok();
+        }
+
+        /// <summary>
         /// Minera os próximos blocos e os adiciona à cadeia.
         /// </summary>
         [HttpPost("Mine")]
@@ -64,6 +80,19 @@ namespace Jitsukawa.Cambriano.Web
             result = $"{result.TrimEnd(new char[] { ' ', ',' })}.";
 
             return Ok(result);
+        }
+
+        /// <summary>
+        /// Informa quantos blocos da cadeia foram minerados pelo nodo.
+        /// </summary>
+        [HttpGet("Mined")]
+        public IActionResult MinedBlocks()
+        {
+            var mined = blockchain.Mined;
+
+            logger.LogInformation($"{DateTime.Now:yyyy-MM-dd HH:mm:ss} Quantidade de blocos minerados consultada.");
+
+            return Ok(mined);
         }
     }
 }

@@ -1,8 +1,12 @@
 ﻿using Jitsukawa.Cambriano.Entity;
 using System;
 using System.Collections.Generic;
+using System.Linq;
+using System.Net;
+using System.Net.Http;
 using System.Security.Cryptography;
 using System.Text.Json;
+using System.Threading.Tasks;
 
 namespace Jitsukawa.Cambriano.Core
 {
@@ -12,10 +16,13 @@ namespace Jitsukawa.Cambriano.Core
     public class Blockchain
     {
         private readonly Crypto crypto;
+        private readonly Network network;
+        private readonly HttpClient http = new();
 
-        public Blockchain(Crypto crypto)
+        public Blockchain(Crypto crypto, Network network)
         {
             this.crypto = crypto;
+            this.network = network;
             Chain.Add(GenesisBlock);
         }
 
@@ -27,6 +34,7 @@ namespace Jitsukawa.Cambriano.Core
         private static Block GenesisBlock => new()
         {
             Nonce = 1,
+            Node = string.Empty,
             Content = "Genesis Block",
             PreviousHash = string.Empty
         };
@@ -49,6 +57,7 @@ namespace Jitsukawa.Cambriano.Core
             {
                 Index = Chain.Count,
                 DateTime = DateTime.Now,
+                Node = network.NodeId,
                 Nonce = nonce,
                 Content = content,
                 PreviousHash = previousHash
@@ -73,6 +82,11 @@ namespace Jitsukawa.Cambriano.Core
 
             return CreateBlock(content, currentNonce, previousHash);
         }
+
+        /// <summary>
+        /// Quantidade de blocos da cadeia que foram minerados pelo nodo.
+        /// </summary>
+        public int Mined => Chain.Count(c => c.Node.Equals(network.NodeId));
 
         #endregion
         #region Chain
@@ -112,6 +126,59 @@ namespace Jitsukawa.Cambriano.Core
             }
 
             return true;
+        }
+
+        /// <summary>
+        /// Atualiza a cadeia conforme o consenso da rede.
+        /// </summary>
+        public async Task<bool> ChainSync()
+        {
+            List<Block> longestChain = Chain;
+
+            var replaced = false;
+            var options = new JsonSerializerOptions()
+            {
+                PropertyNameCaseInsensitive = true
+            };
+
+            var fails = 0;
+            Exception? exception = null;
+            foreach (var node in network.Nodes)
+            {
+                try
+                {
+                    var result = await http.GetAsync($"{node}blockchain");
+                    var response = await result.Content.ReadAsStringAsync();
+
+                    if (HttpStatusCode.OK == result.StatusCode)
+                    {
+                        if (JsonSerializer.Deserialize(response, typeof(List<Block>), options) is not List<Block> nodeChain)
+                        {
+                            throw new JsonException("Formato incorreto");
+                        }
+
+                        // Prioriza a cadeia que mais avançou
+                        if (nodeChain.Count > longestChain.Count && IsChainValid(nodeChain))
+                        {
+                            replaced = true;
+                            longestChain = nodeChain;
+                        }
+                    }
+                }
+                catch (Exception e)
+                {
+                    fails++;
+                    exception = e;
+                }
+            }
+
+            if (network.Nodes.Any() && network.Nodes.Count == fails)
+            {
+                throw new ApplicationException("Rede inválida.", exception);
+            }
+
+            Chain = longestChain;
+            return replaced;
         }
 
         #endregion

@@ -1,0 +1,36 @@
+version: "3"
+services:
+  node1:
+    restart: always
+    image: jitsukawa/cambriano
+    build: .
+    ports:
+      - "5000:80"
+  node2:
+    restart: always
+    image: jitsukawa/cambriano
+    ports:
+      - "5001:80"
+    depends_on:
+      - node1
+  node3:
+    restart: always
+    image: jitsukawa/cambriano
+    ports:
+      - "5002:80"
+    depends_on:
+      - node1
+  node4:
+    restart: always
+    image: jitsukawa/cambriano
+    ports:
+      - "5003:80"
+    depends_on:
+      - node1
+  node5:
+    restart: always
+    image: jitsukawa/cambriano
+    ports:
+      - "5004:80"
+    depends_on:
+      - node1
