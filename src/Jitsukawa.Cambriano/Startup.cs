@@ -1,4 +1,5 @@
 using Jitsukawa.Cambriano.Core;
+using Jitsukawa.Cambriano.Entity;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
@@ -21,13 +22,16 @@ namespace Jitsukawa.Cambriano
         {
             services.AddSingleton<Blockchain>();
             services.AddSingleton<Crypto>();
+            services.AddSingleton<Mempool>();
             services.AddSingleton<Network>();
+
+            services.Configure<Settings>(Configuration.GetSection("Settings"));
 
             services.AddControllers();
 
             services.AddSwaggerGen(c =>
             {
-                c.SwaggerDoc("v1", new OpenApiInfo { Title = "Jitsukawa.Cambriano", Version = "v3" });
+                c.SwaggerDoc("v1", new OpenApiInfo { Title = "Jitsukawa.Cambriano", Version = "v4" });
             });
         }
 
@@ -37,7 +41,7 @@ namespace Jitsukawa.Cambriano
             {
                 app.UseDeveloperExceptionPage();
                 app.UseSwagger();
-                app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "Jitsukawa.Cambriano v3"));
+                app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "Jitsukawa.Cambriano v4"));
             }
 
             app.UseRouting();

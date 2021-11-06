@@ -8,9 +8,11 @@ O nome Cambriano faz referência a um ponto importante na história da vida na T
 
 Cambriano foi desenvolvido em C# para o [.Net 5](https://dotnet.microsoft.com/download/dotnet/5.0). Portanto, o [Visual Studio](https://visualstudio.microsoft.com/pt-br/) 2019 satisfaz os requisitos mínimos necessários para compilar e executar o projeto.  Para fins didáticos, a aplicação foi automatizada o mínimo possível e as operações do nodo são acessíveis manualmente através da interface do Swagger.
 
+![alt text](img/swagger.png "Interface do Swagger")
+
 ## Ponto de partida
 
-Monte uma ou mais redes, interconectadas ou não, minere em diferentes nodos, sincronize as blockchains e observe o comportamento do mecanismo de consenso. Os tópicos I e II auxiliam no início desse processo.
+Monte uma ou mais redes, interconectadas ou não, crie transações em diferentes nodos, minere blocos, sincronize as blockchains e observe o comportamento do mecanismo de consenso e das políticas do mempool. Os tópicos I e II auxiliam no início desse processo.
 
 ## I. Como criar e acessar um nodo
 
@@ -33,15 +35,23 @@ Exemplos:
 |dotnet run --urls=http://localhost:5001|http://localhost:5001/swagger/index.html|
 |dotnet run --urls=http://localhost:5002|http://localhost:5002/swagger/index.html|
 
-O acesso ao nodo também pode ser feito por um cliente HTTP como o Curl ou o Postman.
+Importante:
+
+- O acesso ao nodo também pode ser feito por um cliente HTTP como o Curl ou o Postman.
+
+- O arquivo *appsettings.json* do projeto contém os parâmetros de configuração do Mempool:
+
+    - *BlockSize* - tamanho do bloco em quantidade de transações.
+
+    - *TransactionLifeTime* - prazo, em minutos, para que uma transação seja confirmada na rede.
 
 ## II. Como montar uma rede
 
 1. Crie mais de um nodo com as instruções apresentadas no tópico anterior. Não esqueça de que cada um deve ficar em uma porta diferente.
 
-2. Acesse a operação POST /network de cada nodo e envie em *body* uma lista *json* com os endereços dos demais nodos.
+2. Acesse a operação POST /Network de cada nodo e envie em *body* uma lista *json* com os endereços dos demais nodos.
 
-3. Confirme a conexão de cada nodo com seus vizinhos através da operação GET /network.
+3. Confirme a conexão de cada nodo com seus vizinhos através da operação GET /Network.
 
 Exemplo de rede com 3 nodos:
 

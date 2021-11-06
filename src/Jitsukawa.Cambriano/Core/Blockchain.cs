@@ -1,4 +1,5 @@
 ﻿using Jitsukawa.Cambriano.Entity;
+using Microsoft.Extensions.Options;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -16,13 +17,17 @@ namespace Jitsukawa.Cambriano.Core
     public class Blockchain
     {
         private readonly Crypto crypto;
+        private readonly Mempool mempool;
         private readonly Network network;
+        private readonly Settings settings;
         private readonly HttpClient http = new();
 
-        public Blockchain(Crypto crypto, Network network)
+        public Blockchain(Crypto crypto, Mempool mempool, Network network, IOptions<Settings> configuration)
         {
             this.crypto = crypto;
+            this.mempool = mempool;
             this.network = network;
+            settings = configuration.Value;
             Chain.Add(GenesisBlock);
         }
 
@@ -35,7 +40,6 @@ namespace Jitsukawa.Cambriano.Core
         {
             Nonce = 1,
             Node = string.Empty,
-            Content = "Genesis Block",
             PreviousHash = string.Empty
         };
 
@@ -51,7 +55,7 @@ namespace Jitsukawa.Cambriano.Core
         /// <param name="nonce">Nonce do bloco.</param>
         /// <param name="previousHash">Hash do último bloco.</param>
         /// <returns>Índice do bloco adicionado.</returns>
-        private int CreateBlock(string content, int nonce, string previousHash)
+        private int CreateBlock(int nonce, string previousHash, Transaction[] transactions)
         {
             var block = new Block
             {
@@ -59,7 +63,7 @@ namespace Jitsukawa.Cambriano.Core
                 DateTime = DateTime.Now,
                 Node = network.NodeId,
                 Nonce = nonce,
-                Content = content,
+                Transactions = transactions,
                 PreviousHash = previousHash
             };
 
@@ -73,14 +77,22 @@ namespace Jitsukawa.Cambriano.Core
         /// </summary>
         /// <param name="content">Conteúdo do bloco.</param>
         /// <returns>Índice do bloco.</returns>
-        public int MineBlock(string content)
+        public int MineBlock()
         {
-            var previousBlock = PreviousBlock;
-            var previousNonce = previousBlock.Nonce;
-            var currentNonce = ProofOfWork(previousNonce);
-            var previousHash = Hash(previousBlock);
+            mempool.GarbageCollector();
+            var transactions = mempool.Next(Chain);
 
-            return CreateBlock(content, currentNonce, previousHash);
+            if (transactions.Length == settings.BlockSize)
+            {
+                var previousBlock = PreviousBlock;
+                var previousNonce = previousBlock.Nonce;
+                var currentNonce = ProofOfWork(previousNonce);
+                var previousHash = Hash(previousBlock);
+
+                return CreateBlock(currentNonce, previousHash, transactions);
+            }
+
+            return -1;
         }
 
         /// <summary>

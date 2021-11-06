@@ -61,25 +61,18 @@ namespace Jitsukawa.Cambriano.Web
         }
 
         /// <summary>
-        /// Minera os próximos blocos e os adiciona à cadeia.
+        /// Minera o próximo bloco e o adiciona à cadeia.
         /// </summary>
         [HttpPost("Mine")]
-        public IActionResult MineBlocks([FromBody] string[] contents)
+        public IActionResult MineBlock()
         {
-            var result = "Minerados os blocos: ";
+            var index = blockchain.MineBlock();
 
-            foreach (var content in contents)
-            {
-                var index = blockchain.MineBlock(content);
+            logger.LogInformation(index > 0
+                ? $"{DateTime.Now:yyyy-MM-dd HH:mm:ss} Minerado bloco de índice {index}."
+                : $"{DateTime.Now:yyyy-MM-dd HH:mm:ss} Transações insuficientes para minerar o bloco.");
 
-                logger.LogInformation($"{DateTime.Now:yyyy-MM-dd HH:mm:ss} Minerado o bloco de índice {index}.");
-
-                result += $"{index}, ";
-            }
-
-            result = $"{result.TrimEnd(new char[] { ' ', ',' })}.";
-
-            return Ok(result);
+            return Ok(index);
         }
 
         /// <summary>

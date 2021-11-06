@@ -28,9 +28,9 @@ namespace Jitsukawa.Cambriano.Entity
         public int Nonce { get; set; }
 
         /// <summary>
-        /// Conteúdo do bloco.
+        /// Transações registradas no bloco.
         /// </summary>
-        public string Content { get; set; } = null!;
+        public Transaction[] Transactions { get; set; } = Array.Empty<Transaction>();
 
         /// <summary>
         /// Hash do bloco anterior.
